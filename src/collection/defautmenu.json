@@ -1,0 +1,32 @@
+[
+  {
+    "name": "Paneer",
+    "price": "50",
+    "deleted": false,
+    "image": "/assets/menu/paneer.png"
+  },
+  {
+    "name": "Roti",
+    "price": "5",
+    "deleted": false,
+    "image": "/assets/menu/roti.png"
+  },
+  {
+    "name": "Dal",
+    "price": "30",
+    "deleted": false,
+    "image": "/assets/menu/dal.png"
+  },
+  {
+    "name": "Rice",
+    "price": "20",
+    "deleted": false,
+    "image": "/assets/menu/rice.png"
+  },
+  {
+    "name": "Salad",
+    "price": "10",
+    "deleted": false,
+    "image": "/assets/menu/salad.png"
+  }
+]
