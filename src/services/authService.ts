@@ -1,8 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-// import { db } from "../firebase/config";
-import { doc, setDoc, getDoc } from "firebase/firestore";
-import { sendOTPEmail } from "./emailService";
-import { db } from "../config/firebaseConfig";
+import { api } from '../services/api';
 import { Alert } from "react-native";
 
 export const sendOTP = async (email: string) => {
@@ -10,7 +7,6 @@ export const sendOTP = async (email: string) => {
 
   await AsyncStorage.setItem("otp", otp);
   await AsyncStorage.setItem("email", email);
-    
   return await sendOTPEmail(email, otp);
 };
 

@@ -16,8 +16,11 @@ let User = class User {
     pid;
     name;
     email;
+    mobile;
     mobile_upi;
     role;
+    is_deleted;
+    deleted_at;
     is_verified;
 };
 exports.User = User;
@@ -42,6 +45,10 @@ __decorate([
 __decorate([
     (0, mongoose_1.Prop)(),
     __metadata("design:type", String)
+], User.prototype, "mobile", void 0);
+__decorate([
+    (0, mongoose_1.Prop)(),
+    __metadata("design:type", String)
 ], User.prototype, "mobile_upi", void 0);
 __decorate([
     (0, mongoose_1.Prop)(),
@@ -52,7 +59,7 @@ __decorate([
         default: false,
     }),
     __metadata("design:type", Boolean)
-], User.prototype, "is_verified", void 0);
+], User.prototype, "is_deleted", void 0);
 exports.User = User = __decorate([
     (0, mongoose_1.Schema)({ timestamps: true })
 ], User);

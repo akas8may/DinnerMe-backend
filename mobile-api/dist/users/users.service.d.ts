@@ -17,4 +17,8 @@ export declare class UsersService {
     } & {
         id: string;
     }) | null>;
+    deleteUser(id: string): Promise<{
+        success: boolean;
+        message: string;
+    }>;
 }

@@ -50,16 +50,9 @@ let EmailService = class EmailService {
             pass: process.env.MAIL_PASS,
         },
     });
-    async sendOtp(email, otp) {
-        await this.transporter.sendMail({
-            from: process.env.MAIL_USER,
-            to: email,
-            subject: 'OTP Verification',
-            html: `
-        <h2>Your OTP</h2>
-        <h1>${otp}</h1>
-      `,
-        });
+    async sendOtp(email, otp, forlogin = false) {
+        console.log('Sending OTP to:', email);
+        console.log('OTP:', otp);
         return true;
     }
 };

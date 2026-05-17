@@ -1,22 +1,6 @@
-// import { Module } from '@nestjs/common';
-// import { AppController } from './app.controller';
-// import { AppService } from './app.service';
-// import { AuthModule } from './auth/auth.module';
-// import { UsersModule } from './users/users.module';
-// import { EmailModule } from './email/email.module';
-// import { ConfigModule } from '@nestjs/config';
-
-// @Module({
-//   imports: [AuthModule, UsersModule, EmailModule,
-//     ConfigModule.forRoot({
-//       isGlobal: true,
-//     })
-//     ],
-//   controllers: [AppController],
-//   providers: [AppService],
-// })
-// export class AppModule {}
 import { Module } from '@nestjs/common';
+
+import { ConfigModule } from '@nestjs/config';
 
 import { MongooseModule }
 from '@nestjs/mongoose';
@@ -26,13 +10,34 @@ from './auth/auth.module';
 
 import { UsersModule }
 from './users/users.module';
+import { HeaderResolver, I18nModule } from 'nestjs-i18n';
+import * as path from 'path';
 
 @Module({
   imports: [
+    I18nModule.forRoot({
+      fallbackLanguage: 'en',
+      loaderOptions: {
+        path: path.join(__dirname, '/i18n/'),
+        watch: true,
+      },
+      resolvers: [
+
+        {
+          use: HeaderResolver,
+          options: [
+            'accept-language',
+          ],
+        },
+      ],
+    }),
 
     MongooseModule.forRoot(
-      'mongodb://127.0.0.1:27017/mobile-api'
+      process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/mobile-api'
     ),
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
 
     AuthModule,
 

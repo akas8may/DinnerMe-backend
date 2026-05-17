@@ -29,7 +29,10 @@ export class User {
     unique: true,
   })
   email: string;
-
+  
+  @Prop()
+  mobile: string;
+  
   @Prop()
   mobile_upi: string;
 
@@ -39,6 +42,8 @@ export class User {
   @Prop({
     default: false,
   })
+  is_deleted: boolean;
+  deleted_at: Date;
   is_verified: boolean;
 }
 

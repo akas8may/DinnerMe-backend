@@ -9,14 +9,7 @@ import {
   Alert,
 } from "react-native";
 
-import { db } from "../config/firebaseConfig";
-import {
-  collection,
-  addDoc,
-  getDocs,
-  updateDoc,
-  doc,
-} from "firebase/firestore";
+import { api } from '../services/api';
 
 import { customStyles } from "../styles/customStyles";
 import { getMenu } from "../services/menuService";

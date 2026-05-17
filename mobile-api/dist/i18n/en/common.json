@@ -1,0 +1,7 @@
+{
+  "OTP_SENT": "OTP sent successfully",
+  "EMAIL_EXISTS": "Email already exists",
+  "INVALID_OTP": "Invalid OTP",
+  "REGISTER_SUCCESS": "Registration successful",
+  "USER_NOT_FOUND": "User not found"
+}

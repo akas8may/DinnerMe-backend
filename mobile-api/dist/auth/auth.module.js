@@ -12,14 +12,27 @@ const auth_service_1 = require("./auth.service");
 const auth_controller_1 = require("./auth.controller");
 const users_module_1 = require("../users/users.module");
 const email_module_1 = require("../email/email.module");
+const email_service_1 = require("../email/email.service");
+const jwt_1 = require("@nestjs/jwt");
+const passport_1 = require("@nestjs/passport");
+const jwt_strategy_1 = require("./strategies/jwt.strategy");
+const config_1 = require("@nestjs/config");
 let AuthModule = class AuthModule {
 };
 exports.AuthModule = AuthModule;
 exports.AuthModule = AuthModule = __decorate([
     (0, common_1.Module)({
-        imports: [users_module_1.UsersModule, email_module_1.EmailModule],
+        imports: [users_module_1.UsersModule, email_module_1.EmailModule, passport_1.PassportModule,
+            jwt_1.JwtModule.registerAsync({
+                inject: [config_1.ConfigService],
+                useFactory: (config) => ({
+                    secret: config.get('JWT_SECRET'),
+                    signOptions: { expiresIn: '7d' },
+                }),
+            }),
+        ],
         controllers: [auth_controller_1.AuthController],
-        providers: [auth_service_1.AuthService],
+        providers: [auth_service_1.AuthService, email_service_1.EmailService, jwt_strategy_1.JwtStrategy],
     })
 ], AuthModule);
 //# sourceMappingURL=auth.module.js.map

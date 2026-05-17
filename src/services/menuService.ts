@@ -1,9 +1,4 @@
-import { db } from "../config/firebaseConfig";
-import {
-  collection,
-  getDocs,
-  addDoc
-} from "firebase/firestore";
+
 
 import defaultMenu from "../collection/defautmenu.json";
 

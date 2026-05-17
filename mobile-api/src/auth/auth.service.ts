@@ -1,52 +1,32 @@
-// import { Injectable } from '@nestjs/common';
-// import { EmailService } from '../email/email.service';
-
-// @Injectable()
-// export class AuthService {
-
-//   constructor(
-//     private readonly emailService: EmailService,
-//   ) {}
-
-//   async register(data: any) {
-
-//     const otp = Math.floor(
-//       100000 + Math.random() * 900000,
-//     ).toString();
-
-//     await this.emailService.sendOtp(
-//       data.email,
-//       otp,
-//     );
-
-//     return {
-//       message: 'OTP sent successfully',
-//     };
-//   }
-// }
-
 import { Injectable } from '@nestjs/common';
-
-import { EmailService } from '../email/email.service';
+import { JwtService } from '@nestjs/jwt';
 import { UsersService }
-from '../users/users.service';
-import { tempUsers } from './temp.store';
+  from '../users/users.service';
 
-// import { tempUsers } from './temp.store';
-
+import { tempUsers }
+  from './temp.store';
+import { EmailService } from '../email/email.service';
 @Injectable()
 export class AuthService {
 
   constructor(
     private readonly usersService:
-    UsersService,
-  ) {}
+      UsersService,
+    private readonly emailService:
+      EmailService,
+    private jwtService: JwtService
+  ) { }
 
-  async register(body: any) {
-
+  async createOtp() {
+    return Math.floor(
+      100000 +
+      Math.random() * 900000,
+    ).toString();
+  }
+  async sendOtp(body: any) {
     const oldUser =
       await this.usersService
-      .findByEmail(body.email);
+        .findByEmail(body.email);
 
     if (oldUser) {
       return {
@@ -55,11 +35,7 @@ export class AuthService {
       };
     }
 
-    const otp =
-      Math.floor(
-        100000 +
-        Math.random() * 900000,
-      ).toString();
+    const otp = await this.createOtp();
 
     tempUsers[body.email] = {
       ...body,
@@ -67,14 +43,13 @@ export class AuthService {
       otp_expiry:
         Date.now() + 5 * 60 * 1000,
     };
-
-    console.log(
-      'OTP:',
+    await this.emailService.sendOtp(
+      body.email,
       otp,
     );
 
-    await this.emailService.sendOtp(
-      data.email,
+    console.log(
+      'OTP:',
       otp,
     );
 
@@ -83,12 +58,12 @@ export class AuthService {
     return {
       success: true,
       message:
-        'OTP sent successfully',
+        'OTP_SENT',
     };
-  }
+  } 
+ 
 
   async verifyOtp(body: any) {
-
     const data =
       tempUsers[body.email];
 
@@ -99,7 +74,6 @@ export class AuthService {
           'User not found',
       };
     }
-
     if (
       data.otp !== body.otp
     ) {
@@ -109,57 +83,112 @@ export class AuthService {
           'Invalid OTP',
       };
     }
+    return {
+      success: true,
+      message:
+        'OTP verified successfully',
+    };
+  }
 
+   async register(body: any) {
+    const oldUser =
+      await this.usersService
+        .findByEmail(body.email);
+
+    if (oldUser) {
+      return {
+        success: false,
+        message: 'Email already exists',
+      };
+    }
     const husband =
       await this.usersService.create({
-
-        name: data.name,
-        email: data.email,
+        name: body.name,
+        email: body.email,
+        mobile: body.mobile,
         mobile_upi:
-          data.mobile_upi,
-
+          body.mobile_upi,
         role: 'husband',
-
         is_verified: true,
       });
 
     if (
-      data.wives &&
-      data.wives.length
+      body.wives &&
+      body.wives.length
     ) {
 
       for (
         const wife
-        of data.wives
+        of body.wives
       ) {
 
         await this.usersService
-        .create({
+          .create({
 
-          pid: husband._id,
+            pid: husband._id,
 
-          name: wife.name,
+            name: wife.name,
 
-          email: wife.email,
+            email: wife.email,
 
-          mobile_upi:
-            wife.mobile_upi,
+            mobile_upi:
+              wife.mobile_upi,
 
-          role: 'wife',
+            role: 'wife',
 
-          is_verified: true,
-        });
+            is_verified: true,
+          });
       }
     }
-
-    delete tempUsers[
+     delete tempUsers[
       body.email
     ];
-
     return {
       success: true,
       message:
-        'Registration successful',
+        'User registered successfully',
     };
   }
+
+  async login(email: string) {
+    const user = await this.usersService.findByEmail(email);
+
+    if (!user) {
+      throw new Error('User not found');
+    } 
+
+    const otp = await this.createOtp();
+    tempUsers[email+'login'] =otp;
+    await this.emailService.sendOtp(email, otp, true);
+
+    return { message: 'OTP sent' };
+  }
+
+async verifyLoginOtp(email: string, otp: string) {
+  const storedOtp = tempUsers[email+'login'];
+
+  if (!storedOtp) {
+    throw new Error('OTP expired or not found');
+  }
+  const user = await this.usersService.findByEmail(email);
+  if (!user) {
+    throw new Error('User not found');
+  }
+
+  if (storedOtp !== otp) {
+    throw new Error('Invalid OTP');
+  }
+
+  delete tempUsers[email+'login'];
+  const token = this.jwtService.sign({
+    sub: user._id,
+    email: user.email,
+    role: user.role,
+   });
+
+  return {
+    token,
+    user,
+  };
+} 
 }

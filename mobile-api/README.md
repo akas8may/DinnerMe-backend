@@ -99,6 +99,7 @@ Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
 
 
 <!-- command 
+tree -I "node_modules"
 nest new mobile-api
 cd mobile-api/
 

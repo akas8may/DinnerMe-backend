@@ -11,14 +11,24 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthService = void 0;
 const common_1 = require("@nestjs/common");
+const jwt_1 = require("@nestjs/jwt");
 const users_service_1 = require("../users/users.service");
 const temp_store_1 = require("./temp.store");
+const email_service_1 = require("../email/email.service");
 let AuthService = class AuthService {
     usersService;
-    constructor(usersService) {
+    emailService;
+    jwtService;
+    constructor(usersService, emailService, jwtService) {
         this.usersService = usersService;
+        this.emailService = emailService;
+        this.jwtService = jwtService;
     }
-    async register(body) {
+    async createOtp() {
+        return Math.floor(100000 +
+            Math.random() * 900000).toString();
+    }
+    async sendOtp(body) {
         const oldUser = await this.usersService
             .findByEmail(body.email);
         if (oldUser) {
@@ -27,18 +37,17 @@ let AuthService = class AuthService {
                 message: 'Email already exists',
             };
         }
-        const otp = Math.floor(100000 +
-            Math.random() * 900000).toString();
+        const otp = await this.createOtp();
         temp_store_1.tempUsers[body.email] = {
             ...body,
             otp,
             otp_expiry: Date.now() + 5 * 60 * 1000,
         };
+        await this.emailService.sendOtp(body.email, otp);
         console.log('OTP:', otp);
-        await this.emailService.sendOtp(data.email, otp);
         return {
             success: true,
-            message: 'OTP sent successfully',
+            message: 'OTP_SENT',
         };
     }
     async verifyOtp(body) {
@@ -55,16 +64,31 @@ let AuthService = class AuthService {
                 message: 'Invalid OTP',
             };
         }
+        return {
+            success: true,
+            message: 'OTP verified successfully',
+        };
+    }
+    async register(body) {
+        const oldUser = await this.usersService
+            .findByEmail(body.email);
+        if (oldUser) {
+            return {
+                success: false,
+                message: 'Email already exists',
+            };
+        }
         const husband = await this.usersService.create({
-            name: data.name,
-            email: data.email,
-            mobile_upi: data.mobile_upi,
+            name: body.name,
+            email: body.email,
+            mobile: body.mobile,
+            mobile_upi: body.mobile_upi,
             role: 'husband',
             is_verified: true,
         });
-        if (data.wives &&
-            data.wives.length) {
-            for (const wife of data.wives) {
+        if (body.wives &&
+            body.wives.length) {
+            for (const wife of body.wives) {
                 await this.usersService
                     .create({
                     pid: husband._id,
@@ -79,13 +103,48 @@ let AuthService = class AuthService {
         delete temp_store_1.tempUsers[body.email];
         return {
             success: true,
-            message: 'Registration successful',
+            message: 'User registered successfully',
+        };
+    }
+    async login(email) {
+        const user = await this.usersService.findByEmail(email);
+        if (!user) {
+            throw new Error('User not found');
+        }
+        const otp = await this.createOtp();
+        temp_store_1.tempUsers[email + 'login'] = otp;
+        await this.emailService.sendOtp(email, otp, true);
+        return { message: 'OTP sent' };
+    }
+    async verifyLoginOtp(email, otp) {
+        const storedOtp = temp_store_1.tempUsers[email + 'login'];
+        if (!storedOtp) {
+            throw new Error('OTP expired or not found');
+        }
+        const user = await this.usersService.findByEmail(email);
+        if (!user) {
+            throw new Error('User not found');
+        }
+        if (storedOtp !== otp) {
+            throw new Error('Invalid OTP');
+        }
+        delete temp_store_1.tempUsers[email + 'login'];
+        const token = this.jwtService.sign({
+            sub: user._id,
+            email: user.email,
+            role: user.role,
+        });
+        return {
+            token,
+            user,
         };
     }
 };
 exports.AuthService = AuthService;
 exports.AuthService = AuthService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [users_service_1.UsersService])
+    __metadata("design:paramtypes", [users_service_1.UsersService,
+        email_service_1.EmailService,
+        jwt_1.JwtService])
 ], AuthService);
 //# sourceMappingURL=auth.service.js.map

@@ -12,17 +12,20 @@ export class EmailService {
     },
   });
 
-  async sendOtp(email: string, otp: string) {
+  async sendOtp(email: string, otp: string, forlogin = false ) {
+    console.log('Sending OTP to:', email);
+    console.log('OTP:', otp);
+    // await this.transporter.sendMail({
+    //   from: process.env.MAIL_USER,
+    //   to: email,
+    //   subject: 'OTP Verification',
+    //   html: `
+    //     <h2>Your OTP</h2>
+    //     <h1>${otp}</h1>
+    //     ${forlogin ? '<p>This is for login purposes only.</p><p>This OTP will expire in 5 minutes.</p>' :  '<p>This OTP is for registration purposes.</p><p>This OTP will expire in 5 minutes.</p>'}
+    //   `,
+    // });
 
-    await this.transporter.sendMail({
-      from: process.env.MAIL_USER,
-      to: email,
-      subject: 'OTP Verification',
-      html: `
-        <h2>Your OTP</h2>
-        <h1>${otp}</h1>
-      `,
-    });
 
     return true;
   }

@@ -7,15 +7,7 @@ import {
   Image,
   TextInput,
 } from "react-native";
-
-import { db } from "../config/firebaseConfig";
-import {
-  collection,
-  addDoc,
-  getDocs,
-  updateDoc,
-  doc,
-} from "firebase/firestore";
+import { api } from '../services/api';
 
 import { toast_success, toast_error } from "../services/toastService";
 
